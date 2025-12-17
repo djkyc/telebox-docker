@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# 安装构建依赖
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y \
         build-essential \
@@ -11,14 +11,17 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+# Copy dependency files
 COPY package.json package-lock.json ./
 
-RUN npm ci
+# Install npm dependencies
+RUN npm ci --omit=dev
 
+# Copy all source code
 COPY . .
 
-# TeleBox 官方使用 compile（不是 build）
-RUN npm run compile
+# No build step needed — TeleBox official is pure JS
+# RUN npm run compile   ← remove
 
 RUN mkdir -p /app/data /app/my_session
 
