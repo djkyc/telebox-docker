@@ -1,0 +1,52 @@
+name: Sync TeleBox Official Version
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # 每 3 小时检测一次
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # 必须：允许 tag 同步
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/TeleBoxOrg/TeleBox.git || true
+          git fetch upstream --tags
+
+      - name: Get latest upstream tag
+        id: gettag
+        run: |
+          TAG=$(git tag -l --sort=-v:refname | head -n 1)
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "Latest upstream tag: $TAG"
+
+      - name: Check if tag already exists
+        run: |
+          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+            echo "Tag $TAG already synced."
+            exit 0
+          fi
+        env:
+          TAG: ${{ env.TAG }}
+
+      - name: Merge latest official code
+        run: |
+          git fetch upstream
+          git merge upstream/main --no-edit || true
+
+      - name: Create local tag
+        run: |
+          git tag "${TAG}"
+          git push origin "${TAG}"
+
+      - name: Push merged changes
+        run: git push origin main
