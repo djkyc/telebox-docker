@@ -58,8 +58,8 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/telebox:${{ env.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/telebox:latest
             ghcr.io/${{ github.repository_owner }}/telebox:stable
+            ghcr.io/${{ github.repository_owner }}/telebox:latest
             ghcr.io/${{ github.repository_owner }}/telebox:sha-${{ env.SHA }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
