@@ -18,7 +18,8 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build
+npm run compile
+
 
 RUN mkdir -p /app/data /app/my_session
 
