@@ -2,7 +2,7 @@ name: Sync TeleBox Official Version
 
 on:
   schedule:
-    - cron: "0 */3 * * *"   # 每 3 小时自动同步一次
+    - cron: "0 */3 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -15,30 +15,48 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0    # 必须：允许 tag 操作
+          fetch-depth: 0
+
+      - name: Ensure repo initialized
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          # 如果仓库是空的，创建初次提交
+          if [ -z "$(ls -A .)" ]; then
+            echo "{}" > placeholder.json
+            git add .
+            git commit -m "init"
+            git push || true
+          fi
 
       - name: Add upstream remote
         run: |
           git remote add upstream https://github.com/TeleBoxOrg/TeleBox.git || true
           git fetch upstream
 
-      - name: Merge upstream changes
+      - name: Merge upstream main into local main
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git merge upstream/main --no-edit || true
+          git merge upstream/main --allow-unrelated-histories --no-edit || true
 
-      - name: Read package.json version
-        id: getver
+      - name: Verify package.json exists
+        run: |
+          if [ ! -f package.json ]; then
+            echo "package.json not found. Merge may have failed."
+            exit 1
+          fi
+
+      - name: Read version from package.json
+        id: version
         run: |
           VERSION=$(jq -r '.version' package.json)
           TAG="v$VERSION"
           echo "TAG=$TAG" >> $GITHUB_ENV
 
-      - name: Check if version already exists
+      - name: Skip if tag exists
         run: |
           if git rev-parse "${TAG}" >/dev/null 2>&1; then
-            echo "Version ${TAG} already exists, skipping tagging."
+            echo "Tag ${TAG} already exists."
             exit 0
           fi
 
@@ -46,7 +64,7 @@ jobs:
         run: |
           git tag "${TAG}"
 
-      - name: Push changes + tag
+      - name: Push changes and tag
         run: |
           git push origin main
           git push origin "${TAG}"
