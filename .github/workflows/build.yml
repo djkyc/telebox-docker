@@ -1,9 +1,10 @@
 name: 2 Build Multi-Arch Docker Image
 
 on:
+  workflow_dispatch:    # ← 手动触发
   push:
     tags:
-      - "v*"
+      - "v*"            # ← 自动触发（推送 tag）
 
 jobs:
   build:
@@ -19,8 +20,15 @@ jobs:
       - name: Extract version and SHA
         id: vars
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
+          # 如果是手动运行 workflow_dispatch，则使用package.json中的版本
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            VERSION=$(jq -r '.version' package.json)
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          
           SHA=${GITHUB_SHA::8}
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "SHA=$SHA" >> $GITHUB_ENV
 
