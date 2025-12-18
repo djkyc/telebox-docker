@@ -1,52 +1,33 @@
 FROM node:20-slim
 
-# ===============================
-# 1. 安装系统依赖
-# ===============================
+# 1. 系统依赖
 RUN apt-get update && \
     apt-get install -y \
         build-essential \
         python3 \
         sqlite3 \
         git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ===============================
-# 2. 设置工作目录
-# ===============================
+# 2. 工作目录
 WORKDIR /app
 
-# ===============================
-# 3. 复制依赖定义并安装
-# ===============================
+# 3. 安装依赖
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# ===============================
 # 4. 复制源码
-# ===============================
 COPY . .
 
-# ===============================
-# 5. 确保 .env 存在（关键）
-#    TeleBox / tsx 会自动加载
-# ===============================
-RUN if [ ! -f .env ]; then touch .env; fi
+# 5. 拷贝 entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# ===============================
-# 6. 创建持久化目录
-# ===============================
-RUN mkdir -p /app/data /app/my_session
+# 6. 声明持久化卷（非常关键）
+VOLUME ["/app/data", "/app/my_session", "/app/.env"]
 
-VOLUME ["/app/data", "/app/my_session"]
-
-# ===============================
 # 7. 运行环境
-# ===============================
 ENV NODE_ENV=production
 
-# ===============================
-# 8. 启动命令
-# ===============================
-CMD ["npm", "start"]
+# 8. 启动入口
+ENTRYPOINT ["/entrypoint.sh"]
