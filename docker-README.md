@@ -88,7 +88,7 @@ ghcr.io/djkyc/telebox:0.2.6
 
 | Key | Value |
 |-----|--------|
-| TELEBOX_API_ID | 你的 Telegram API ID |
+| TELEBOX_API_ID | 你的 Telegram API ID | https://my.telegram.org
 | TELEBOX_API_HASH | Telegram API Hash |
 | TELEBOX_BOT_TOKEN | 机器人 Token / 或使用用户登录 |
 | NODE_ENV | production |
