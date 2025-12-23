@@ -24,7 +24,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # 6. 声明持久化卷（非常关键）
-VOLUME ["/app/data", "/app/my_session", "/app/.env"]
+VOLUME ["/app/data", "/app/my_session"]
 
 # 7. 运行环境
 ENV NODE_ENV=production
