@@ -19,15 +19,15 @@ RUN npm ci --omit=dev
 # 4. 复制源码
 COPY . .
 
-# 5. 拷贝 entrypoint
+# 5. entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# 6. 声明持久化卷（非常关键）
+# ✅ 只声明“目录型”数据
 VOLUME ["/app/data", "/app/my_session"]
 
-# 7. 运行环境
+# 6. 运行环境
 ENV NODE_ENV=production
 
-# 8. 启动入口
+# 7. 启动入口
 ENTRYPOINT ["/entrypoint.sh"]
